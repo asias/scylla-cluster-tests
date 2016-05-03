@@ -905,6 +905,12 @@ class LoaderSet(Cluster):
 
         return queue
 
+    def kill_stress_thread(self):
+        for loader in self.nodes:
+            kill_cmd='PIDS=$(pgrep -f cassandra-stress) && pkill -TERM -P $PIDS'
+            result = loader.remoter.run(cmd=kill_cmd, timeout=60)
+            self.log.debug('Kill cassandra-stress process on loader %s: %s', str(loader), str(result))
+
     def do_plot(self, lines, plotfile='plot'):
         time_plot = []
         ops_plot = []
