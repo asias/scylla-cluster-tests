@@ -57,7 +57,7 @@ class ReduceClusterTest(ClusterTester):
 
         # Wait for cluster is filled with data
         # Set space_node_treshold in config file for the size
-        self.db_cluster.wait_total_space_used_per_node()
+        # self.db_cluster.wait_total_space_used_per_node()
 
         self.db_cluster.add_nemesis(DecommissionNoAddMonkey)
         # Have c-s run for 2 + 3 minutes before we start to do decommission
