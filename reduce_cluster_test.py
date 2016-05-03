@@ -69,6 +69,8 @@ class ReduceClusterTest(ClusterTester):
             self.db_cluster.start_nemesis(interval=10)
             self.db_cluster.stop_nemesis(timeout=None)
 
+        self.kill_stress_thread()
+
         self.verify_stress_thread(queue=stress_queue)
 
     def test_reduce_5_to_3(self):
