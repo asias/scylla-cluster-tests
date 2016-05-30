@@ -1107,6 +1107,8 @@ class ScyllaLibvirtCluster(LibvirtCluster, BaseScyllaCluster):
             node.wait_db_up(verbose=verbose)
             node.remoter.run('sudo yum install -y scylla-gdb',
                              verbose=verbose, ignore_status=True)
+            node.remoter.run('sudo systemctl set-property scylla-server.service BlockIOReadBandwidth="/dev/md0 10M"')
+            node.remoter.run('sudo systemctl set-property scylla-server.service BlockIOWriteBandwidth="/dev/md0 10M"')
             queue.put(node)
             queue.task_done()
 
