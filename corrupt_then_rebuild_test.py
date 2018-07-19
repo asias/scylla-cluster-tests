@@ -37,6 +37,15 @@ class CorruptThenRebuildTest(ClusterTester):
             self.verify_stress_thread(queue=stress)
         self.populate_data_parallel(100, blocking=False, read=True)
 
+    def test_wipe_then_rebuild_nodes(self):
+        # populates 1B keys RF=3 default c-s schema
+        nr_partitions = int(1e9)
+        nr_partitions = int(1e6)
+        write_queue = self.populate_data_parallel_nr_partitions(nr_partitions, blocking=True)
+
+        # run rebuild
+        current_nemesis = nemesis.CorruptThenRebuildMonkey(self.db_cluster, self.loaders, self.monitors, None)
+        current_nemesis.disrupt()
 
 if __name__ == '__main__':
     main()
