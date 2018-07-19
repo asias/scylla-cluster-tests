@@ -227,4 +227,4 @@ databases: !mux
         # and we'll stress the DB nodes more thoroughly
         instance_type_db: 'i3.xlarge'
         # Spawn a monitor node
-        n_monitor_nodes: 1
+        n_monitor_nodes: 0
