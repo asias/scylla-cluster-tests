@@ -1329,16 +1329,22 @@ class BaseScyllaCluster(object):
 
         start_time = time.time()
 
+        self.log.info("_update_db_binary step 1")
         # First, stop *all* non seed nodes
         self.run_func_parallel(func=stop_scylla, node_list=non_seed_nodes)
+        self.log.info("_update_db_binary step 2")
         # First, stop *all* seed nodes
         self.run_func_parallel(func=stop_scylla, node_list=seed_nodes)
+        self.log.info("_update_db_binary step 3")
         # Then, update bin only on requested nodes
         self.run_func_parallel(func=update_scylla_bin, node_list=node_list)
+        self.log.info("_update_db_binary step 4")
         # Start all seed nodes
         self.run_func_parallel(func=start_scylla, node_list=seed_nodes)
+        self.log.info("_update_db_binary step 5")
         # Start all non seed nodes
         self.run_func_parallel(func=start_scylla, node_list=non_seed_nodes)
+        self.log.info("_update_db_binary step 6")
 
         time_elapsed = time.time() - start_time
         self.log.debug('Update DB binary duration -> %s s', int(time_elapsed))
