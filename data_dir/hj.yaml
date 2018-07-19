@@ -46,6 +46,8 @@ update_db_binary: 'rpms/scylla'
 # update_db_packages: $path_of_folder_with_packages
 #update_db_packages: 'rpms'
 # append_scylla_args: '--streaming-with-rpc-stream 1'
+#  With 1111, it disables new streaming
+append_scylla_args: '--compaction-large-partition-warning-threshold-mb 1111'
 
 es_url:
 es_user:
