@@ -63,7 +63,7 @@ new_version: ''
 # provided by the ami. This is used when we want to upgrade to a version
 # that is not yet in the repository.
 # upgrade_node_packages: $path_of_folder_with_packages
-upgrade_node_packages: ''
+upgrade_node_packages: 'rpms'
 
 backends: !mux
     libvirt: !mux
