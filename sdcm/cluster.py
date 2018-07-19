@@ -1318,7 +1318,7 @@ class BaseScyllaCluster(object):
             queue.task_done()
 
         def stop_scylla(node, queue):
-            node.stop_scylla(verify_down=True, verify_up=True)
+            node.stop_scylla(verify_down=True, verify_up=False)
             queue.put(node)
             queue.task_done()
 
