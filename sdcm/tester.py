@@ -1108,7 +1108,7 @@ class ClusterTester(db_stats.TestStatsMixin, Test):
         if read:
             base_cmd = "cassandra-stress read cl=ONE "
         stress_fixed_params = " -schema 'replication(factor=3)' " \
-                              "-port jmx=6868 -mode cql3 native -rate threads=200 -col  "
+                              "-port jmx=6868 -mode cql3 native -rate threads=200 "
         stress_keys = "n="
         population = " -pop seq="
 
