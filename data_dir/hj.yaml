@@ -45,7 +45,7 @@ update_db_binary: ''
 # without making a new ami via rpm package updates.
 # update_db_packages: $path_of_folder_with_packages
 update_db_packages: 'rpms'
-append_scylla_args: '--streaming-with-rpc-stream 1'
+# append_scylla_args: '--streaming-with-rpc-stream 1'
 
 es_url:
 es_user:
