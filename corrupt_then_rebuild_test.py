@@ -40,8 +40,8 @@ class CorruptThenRebuildTest(ClusterTester):
     def test_wipe_then_rebuild_nodes(self):
         # populates 1B keys RF=3 default c-s schema
         nr_partitions = int(1e6)
-        nr_partitions = int(1e9)
         nr_partitions = int(50e6)
+        nr_partitions = int(1e9)
         write_queue = self.populate_data_parallel_nr_partitions(nr_partitions, blocking=True)
 
         # run rebuild

@@ -11,7 +11,7 @@ n_db_nodes: 3
 # If you want to use more than 1 loader node, I recommend
 # increasing the size of the DB instance (instance_type_db parameter),
 # since 't2.micro' nodes tend to struggle with a lot of load.
-n_loaders: 4
+n_loaders: 6
 # Nemesis class to use (possible types in sdcm.nemesis). Example: StopStartMonkey
 nemesis_class_name: 'ChaosMonkey'
 # Nemesis sleep interval to use if None provided specifically
@@ -132,18 +132,18 @@ backends: !mux
             security_group_ids: 'sg-c5e1f7a0'
             subnet_id: 'subnet-ec4a72c4'
             #ami_id_db_scylla: 'ami-79d3f06e'
-            #ami_id_db_scylla: 'ami-3ceac343'
-            ami_id_db_scylla: 'ami-1c9cb063'
+            ami_id_db_scylla: 'ami-3ceac343'
+            #ami_id_db_scylla: 'ami-1c9cb063'
             ami_db_scylla_user: 'centos'
             #ami_id_loader: 'ami-79d3f06e'
-            #ami_id_loader: 'ami-3ceac343'
-            ami_id_loader: 'ami-1c9cb063'
+            ami_id_loader: 'ami-3ceac343'
+            #ami_id_loader: 'ami-1c9cb063'
             ami_loader_user: 'centos'
             ami_id_db_cassandra: 'ami-ada2b6c4'
             ami_db_cassandra_user: 'ubuntu'
             #ami_id_monitor: 'ami-79d3f06e'
-            #ami_id_monitor: 'ami-3ceac343'
-            ami_id_monitor: 'ami-1c9cb063'
+            ami_id_monitor: 'ami-3ceac343'
+            #ami_id_monitor: 'ami-1c9cb063'
             ami_monitor_user: 'centos'
         #multiple datacenters
         us_east_1_and_us_west_2:
