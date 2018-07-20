@@ -11,7 +11,7 @@ n_db_nodes: 3
 # If you want to use more than 1 loader node, I recommend
 # increasing the size of the DB instance (instance_type_db parameter),
 # since 't2.micro' nodes tend to struggle with a lot of load.
-n_loaders: 6
+n_loaders: 4
 # Nemesis class to use (possible types in sdcm.nemesis). Example: StopStartMonkey
 nemesis_class_name: 'ChaosMonkey'
 # Nemesis sleep interval to use if None provided specifically
@@ -98,7 +98,8 @@ backends: !mux
         # loader instance by default.
         instance_type_loader: 'c3.xlarge'
         # Size of AWS monitor instance
-        instance_type_monitor: t2.small
+        #instance_type_monitor: t2.small
+        instance_type_monitor: t2.large
         ami_id_db_scylla_desc: '1.3-dev'
         us_west_1:
             user_credentials_path: ''
@@ -232,4 +233,4 @@ databases: !mux
         # and we'll stress the DB nodes more thoroughly
         instance_type_db: 'i3.xlarge'
         # Spawn a monitor node
-        n_monitor_nodes: 0
+        n_monitor_nodes: 1
