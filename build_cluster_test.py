@@ -18,6 +18,8 @@ from avocado import main
 
 from sdcm.tester import ClusterTester
 
+import time
+
 
 class BuildClusterTest(ClusterTester):
     """
@@ -46,6 +48,29 @@ class BuildClusterTest(ClusterTester):
                           self.monitors.nodes[0].public_ip_address)
             self.log.info('Grafana Web UI: http://%s:3000',
                           self.monitors.nodes[0].public_ip_address)
+
+    def test_build_and_sleep(self):
+        """
+        Build a Scylla cluster with params defined in data_dir/scylla.yaml
+        """
+        self.log.info('DB cluster is: %s', self.db_cluster)
+        for node in self.db_cluster.nodes:
+            self.log.info(node.remoter.ssh_debug_cmd())
+        self.log.info('Loader Nodes: %s', self.loaders)
+        for node in self.loaders.nodes:
+            self.log.info(node.remoter.ssh_debug_cmd())
+        self.log.info('Monitor Nodes: %s', self.monitors)
+        for node in self.monitors.nodes:
+            self.log.info(node.remoter.ssh_debug_cmd())
+        if self.monitors.nodes:
+            self.log.info('Prometheus Web UI: http://%s:9090',
+                          self.monitors.nodes[0].public_ip_address)
+            self.log.info('Grafana Web UI: http://%s:3000',
+                          self.monitors.nodes[0].public_ip_address)
+        n = 100000000
+        self.log.info('Started to sleep for %s seconds', str(n))
+        time.sleep(100000000)
+        self.log.info('Finished to sleep for %s seconds', str(n))
 
     def test_use_public_dns_names(self):
         """
