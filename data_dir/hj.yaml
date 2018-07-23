@@ -48,7 +48,7 @@ update_db_binary: 'rpms/scylla'
 #update_db_packages: 'rpms'
 # append_scylla_args: '--streaming-with-rpc-stream 1'
 #  With 1111, it disables new streaming
-append_scylla_args: '--compaction-large-partition-warning-threshold-mb 1111'
+append_scylla_args: '--compaction-large-partition-warning-threshold-mb 1000'
 
 es_url:
 es_user:
@@ -233,5 +233,6 @@ databases: !mux
         # Let's use c3.large since we're using iotune
         # and we'll stress the DB nodes more thoroughly
         instance_type_db: 'i3.xlarge'
+        #instance_type_db: 'i3.2xlarge'
         # Spawn a monitor node
         n_monitor_nodes: 1
