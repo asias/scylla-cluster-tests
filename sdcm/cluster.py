@@ -4601,10 +4601,9 @@ class BaseLoaderSet():
                           ">> /etc/security/limits.d/20-coredump.conf\"")
         if result.exit_status == 0:
             # Update existing scylla-bench to latest
-            if 'scylla-bench' in self.params.list_of_stress_tools:
-                self.install_scylla_bench(node)
-                self.log.debug('Skip loader setup for using a prepared AMI')
-                return
+            self.install_scylla_bench(node)
+            self.log.debug('Skip loader setup for using a prepared AMI')
+            return
 
         if node.is_ubuntu14():
             install_java_script = dedent("""
@@ -4656,8 +4655,7 @@ class BaseLoaderSet():
 
         node.wait_cs_installed(verbose=verbose)
 
-        if 'scylla-bench' in self.params.list_of_stress_tools:
-            self.install_scylla_bench(node)
+        self.install_scylla_bench(node)
 
         # install docker
         docker_install = dedent("""
