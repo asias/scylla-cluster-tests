@@ -1823,7 +1823,7 @@ class Nemesis:  # pylint: disable=too-many-instance-attributes,too-many-public-m
         LOGGER.info("enabling auto repair on db nodes")
         for node in self.cluster.nodes:
             set_auto_repair(node, enabled=True, keyspace="keyspace1", table="standard1", threshold=300)
-        duration = 15 * 60
+        duration = 30 * 60
         LOGGER.info(f"auto repair enabled for {duration} seconds")
         time.sleep(duration)
         LOGGER.info("disabling auto repair on db nodes")
