@@ -322,6 +322,7 @@ class PerformanceRegressionTest(ClusterTester):  # pylint: disable=too-many-publ
         self.check_regression()
 
     def run_workload(self, stress_cmd, nemesis=False, sub_type=None):
+        self.log.info("HJ: run_workload0")
         # create new document in ES with doc_id = test_id
         # allow to correctly save results for future compare
         self.stress_cmd = stress_cmd
@@ -329,16 +330,22 @@ class PerformanceRegressionTest(ClusterTester):  # pylint: disable=too-many-publ
         self.create_test_stats(sub_type=sub_type, append_sub_test_to_name=False, test_index=test_index)
         stress_queue = self.run_stress_thread(stress_cmd=stress_cmd, stress_num=1, stats_aggregate_cmds=False)
         if nemesis:
+            self.log.info("HJ: run_workload1")
             interval = self.params.get('nemesis_interval')
             time.sleep(interval * 60)  # Sleeping one interval (in minutes) before starting the nemesis
+            self.log.info("HJ: run_workload2")
             self.db_cluster.add_nemesis(nemesis=self.get_nemesis_class(), tester_obj=self)
+            self.log.info("HJ: run_workload3")
             self.db_cluster.start_nemesis(interval=interval, cycles_count=1)
+            self.log.info("HJ: run_workload4")
             self._stop_load_when_nemesis_threads_end()
+            self.log.info("HJ: run_workload5")
         results = self.get_stress_results(queue=stress_queue)
         self.update_test_details(scrap_metrics_step=60)
         self.display_results(results, test_name='test_latency' if not nemesis else 'test_latency_with_nemesis')
         check_latency = self.check_regression if not nemesis else self.check_latency_during_ops
         check_latency()
+        self.log.info("HJ: run_workload6")
 
     def prepare_mv(self, on_populated=False):
         with self.db_cluster.cql_connection_patient_exclusive(self.db_cluster.nodes[0]) as session:
@@ -624,11 +631,17 @@ class PerformanceRegressionTest(ClusterTester):  # pylint: disable=too-many-publ
         self.run_workload(stress_cmd=self.params.get('stress_cmd_w'), nemesis=True, sub_type='write')
 
     def test_latency_mixed_with_nemesis(self):
+        self.log.info("HJ: test_latency_mixed_with_nemesis1")
         self.run_fstrim_on_all_db_nodes()
+        self.log.info("HJ: test_latency_mixed_with_nemesis2")
         self.preload_data()
+        self.log.info("HJ: test_latency_mixed_with_nemesis3")
         self.wait_no_compactions_running(n=160)
+        self.log.info("HJ: test_latency_mixed_with_nemesis4")
         self.run_fstrim_on_all_db_nodes()
+        self.log.info("HJ: test_latency_mixed_with_nemesis5")
         self.run_workload(stress_cmd=self.params.get('stress_cmd_m'), nemesis=True, sub_type='mixed')
+        self.log.info("HJ: test_latency_mixed_with_nemesis6")
 
     # MV Tests
     def test_mv_write(self):
