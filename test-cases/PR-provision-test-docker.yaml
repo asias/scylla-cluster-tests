@@ -1,5 +1,5 @@
-test_duration: 600
-stress_cmd: ["cassandra-stress write cl=ONE duration=10m -schema 'replication(strategy=NetworkTopologyStrategy,replication_factor=2) compaction(strategy=SizeTieredCompactionStrategy)' -mode cql3 native -rate threads=10 -pop seq=1..10000000 -log interval=5"]
+test_duration: 120
+stress_cmd: ["cassandra-stress write cl=ONE duration=2m -schema 'replication(strategy=NetworkTopologyStrategy,replication_factor=2) compaction(strategy=SizeTieredCompactionStrategy)' -mode cql3 native -rate threads=10 -pop seq=1..10000000 -log interval=5"]
 
 n_loaders: 1
 n_monitor_nodes: 1
@@ -15,3 +15,5 @@ nemesis_filter_seeds: false
 user_prefix: 'PR-provision-docker'
 
 use_mgmt: false
+
+store_perf_results: false
