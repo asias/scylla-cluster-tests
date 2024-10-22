@@ -1657,8 +1657,8 @@ class Nemesis:  # pylint: disable=too-many-instance-attributes,too-many-public-m
         self._prepare_test_table(ks=f'keyspace1', table='standard1')
         self.cluster.wait_for_schema_agreement()
 
-        LOGGER.info("Set gc mode to repair")
         cmd = "ALTER TABLE keyspace1.standard1 WITH tombstone_gc = {'mode': 'repair'};"
+        LOGGER.info(f"Set gc mode to repair: {cmd}")
         self.target_node.run_cqlsh(cmd)
 
         def _nodetool_repair(node):
@@ -1666,13 +1666,17 @@ class Nemesis:  # pylint: disable=too-many-instance-attributes,too-many-public-m
             with adaptive_timeout(Operations.REPAIR, node, timeout=HOUR_IN_SEC * 48):
                 node.run_nodetool(sub_cmd="repair -pr keyspace1", long_running=True, retry=0)
 
-        LOGGER.info("Started repair on db nodes")
+        start_time = time.time()
+        LOGGER.info("HJ: Started repair on db nodes")
 
         parallel_objects = ParallelObject(self.cluster.nodes, num_workers=min(
             32, len(self.cluster.nodes)), timeout=HOUR_IN_SEC * 48)
         parallel_objects.run(_nodetool_repair)
 
-        LOGGER.info("Finished repair on db nodes")
+        end_time = time.time()
+        time_elapsed = int(end_time - start_time)
+        LOGGER.info(f"HJ: Finished repair on db nodes time_elapsed={time_elapsed}")
+        time.sleep(60)
 
     def _major_compaction(self):
         with adaptive_timeout(Operations.MAJOR_COMPACT, self.target_node, timeout=8000):

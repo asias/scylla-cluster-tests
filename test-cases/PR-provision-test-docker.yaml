@@ -1,15 +1,14 @@
-test_duration: 60
-stress_cmd: ["cassandra-stress write cl=ONE duration=1m -schema 'replication(strategy=NetworkTopologyStrategy,replication_factor=1) compaction(strategy=SizeTieredCompactionStrategy)' -mode cql3 native -rate threads=10 -pop seq=1..10000000 -log interval=5",
-             "cassandra-stress counter_write cl=ONE duration=1m -schema 'replication(strategy=NetworkTopologyStrategy,replication_factor=1) compaction(strategy=TimeWindowCompactionStrategy)' -mode cql3 native -rate threads=5 -pop seq=1..10000000"
-             ]
+test_duration: 600
+stress_cmd: ["cassandra-stress write cl=ONE duration=10m -schema 'replication(strategy=NetworkTopologyStrategy,replication_factor=2) compaction(strategy=SizeTieredCompactionStrategy)' -mode cql3 native -rate threads=10 -pop seq=1..10000000 -log interval=5"]
 
 n_loaders: 1
 n_monitor_nodes: 1
-n_db_nodes: 1
+n_db_nodes: 2
 
 instance_type_runner: c6i.2xlarge
 
-nemesis_class_name: NonDisruptiveMonkey
+#nemesis_class_name: NonDisruptiveMonkey
+nemesis_class_name: NoCorruptRepairAllNodesMonkey
 nemesis_interval: 1
 nemesis_filter_seeds: false
 
