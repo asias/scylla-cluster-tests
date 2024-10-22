@@ -124,6 +124,7 @@ class LongevityTest(ClusterTester, loader_utils.LoaderUtilsMixin):
         Run cassandra-stress with params defined in data_dir/scylla.yaml
         """
         # pylint: disable=too-many-locals,too-many-branches,too-many-statements
+        self.log.info("HJ: start of test_custom_time")
 
         self.db_cluster.add_nemesis(nemesis=self.get_nemesis_class(),
                                     tester_obj=self)
@@ -217,6 +218,7 @@ class LongevityTest(ClusterTester, loader_utils.LoaderUtilsMixin):
                 for node in self.db_cluster.nodes:
                     self._run_validate_large_collections_in_system(node)
                     self._run_validate_large_collections_warning_in_logs(node)
+        self.log.info("HJ: end of test_custom_time")
 
     def test_batch_custom_time(self):
         """
