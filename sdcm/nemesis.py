@@ -1651,6 +1651,29 @@ class Nemesis:  # pylint: disable=too-many-instance-attributes,too-many-public-m
             finally:
                 thread.result()
 
+    @latency_calculator_decorator(legend="Run repair on all nodes")
+    def disrupt_no_corrupt_repair_all_nodes(self):
+        self.log.debug('Prepare test table if they do not exist')
+        self._prepare_test_table(ks=f'keyspace1', table='standard1')
+        self.cluster.wait_for_schema_agreement()
+
+        LOGGER.info("Set gc mode to repair")
+        cmd = "ALTER TABLE keyspace1.standard1 WITH tombstone_gc = {'mode': 'repair'};"
+        self.target_node.run_cqlsh(cmd)
+
+        def _nodetool_repair(node):
+            LOGGER.info(f"Run nodetool repair on {node}")
+            with adaptive_timeout(Operations.REPAIR, node, timeout=HOUR_IN_SEC * 48):
+                node.run_nodetool(sub_cmd="repair -pr keyspace1", long_running=True, retry=0)
+
+        LOGGER.info("Started repair on db nodes")
+
+        parallel_objects = ParallelObject(self.cluster.nodes, num_workers=min(
+            32, len(self.cluster.nodes)), timeout=HOUR_IN_SEC * 48)
+        parallel_objects.run(_nodetool_repair)
+
+        LOGGER.info("Finished repair on db nodes")
+
     def _major_compaction(self):
         with adaptive_timeout(Operations.MAJOR_COMPACT, self.target_node, timeout=8000):
             self.target_node.run_nodetool("compact")
@@ -5554,6 +5577,14 @@ class NoCorruptRepairMonkey(Nemesis):
 
     def disrupt(self):
         self.disrupt_no_corrupt_repair()
+
+class NoCorruptRepairAllNodesMonkey(Nemesis):
+    disruptive = False
+    kubernetes = True
+    limited = True
+
+    def disrupt(self):
+        self.disrupt_no_corrupt_repair_all_nodes()
 
 
 class MajorCompactionMonkey(Nemesis):
