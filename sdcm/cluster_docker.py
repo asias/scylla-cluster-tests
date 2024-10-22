@@ -122,7 +122,7 @@ class DockerNode(cluster.BaseNode, NodeContainerMixin):  # pylint: disable=abstr
         return public_ipv4_addresses, private_ipv4_addresses
 
     def _get_ipv6_ip_address(self):
-        self.log.warning("We don't support IPv6 for Docker backend")
+        #self.log.warning("We don't support IPv6 for Docker backend")
         return ""
 
     @cached_property
@@ -224,6 +224,7 @@ class DockerCluster(cluster.BaseCluster):  # pylint: disable=abstract-method
                  n_nodes: Union[list, int] = 3,
                  params: dict = None) -> None:
         self.source_image = f"{docker_image}:{docker_image_tag}"
+        # FIXME
         self.node_container_image_tag = f"scylla-sct:{node_type}-{str(self.test_config.test_id())[:8]}"
         self.node_container_key_file = node_key_file
 
@@ -417,6 +418,7 @@ class DockerMonitoringNode(cluster.BaseNode):  # pylint: disable=abstract-method
     def tags(self) -> dict[str, str]:
         return {**super().tags, "NodeIndex": str(self.node_index), }
 
+    # FIXME: monitor is local
     def _init_remoter(self, ssh_login_info):  # pylint: disable=no-self-use
         self.remoter = LOCALRUNNER
 

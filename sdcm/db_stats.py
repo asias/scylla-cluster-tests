@@ -706,11 +706,14 @@ class TestStatsMixin(Stats):
             cmd_params = None
             self.log.warning("Unknown stresser: %s" % stresser)
         if cmd_params:
-            if aggregate:
-                self._stats['test_details'][section].append(cmd_params)
-            else:
-                self._stats['test_details'][section].update(cmd_params)
-            self.update(dict(test_details=self._stats['test_details']))
+            try:
+                if aggregate:
+                    self._stats['test_details'][section].append(cmd_params)
+                else:
+                    self._stats['test_details'][section].update(cmd_params)
+                self.update(dict(test_details=self._stats['test_details']))
+            except:
+                pass
 
     def _calc_stats(self, ps_results):
         try:
