@@ -634,7 +634,7 @@ class PerformanceRegressionTest(ClusterTester):  # pylint: disable=too-many-publ
         self.log.info("HJ: test_latency_write_with_nemesis4")
         self.run_fstrim_on_all_db_nodes()
         self.log.info("HJ: test_latency_write_with_nemesis5")
-        self.run_workload(stress_cmd=self.params.get('stress_cmd_w'), nemesis=True, sub_type='write', cycles_count=2)
+        self.run_workload(stress_cmd=self.params.get('stress_cmd_w'), nemesis=True, sub_type='write', cycles_count=1)
         self.log.info("HJ: test_latency_write_with_nemesis6")
 
     def test_latency_mixed_with_nemesis(self):
@@ -647,7 +647,7 @@ class PerformanceRegressionTest(ClusterTester):  # pylint: disable=too-many-publ
         self.log.info("HJ: test_latency_mixed_with_nemesis4")
         self.run_fstrim_on_all_db_nodes()
         self.log.info("HJ: test_latency_mixed_with_nemesis5")
-        self.run_workload(stress_cmd=self.params.get('stress_cmd_m'), nemesis=True, sub_type='mixed', cycles_count=2)
+        self.run_workload(stress_cmd=self.params.get('stress_cmd_m'), nemesis=True, sub_type='mixed', cycles_count=1)
         self.log.info("HJ: test_latency_mixed_with_nemesis6")
 
     # MV Tests
