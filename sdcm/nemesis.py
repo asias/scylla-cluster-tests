@@ -1694,7 +1694,7 @@ class Nemesis:  # pylint: disable=too-many-instance-attributes,too-many-public-m
 
         start_time = time.time()
 
-        nodes = 3 * self.cluster.nodes
+        nodes = 12 * self.cluster.nodes
 
         LOGGER.info(f"HJ: Started repair on db {nodes=} in parallel")
 
