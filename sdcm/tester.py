@@ -2953,6 +2953,9 @@ class ClusterTester(db_stats.TestStatsMixin, unittest.TestCase):  # pylint: disa
         self.destroy_credentials()
 
     def tearDown(self):
+        s=traceback.extract_stack()
+        self.log.info(f'HJ: TearDown')
+        self.log.info(f'HJ: stack={s}')
         self.teardown_started = True
         with silence(parent=self, name='Sending test end event'):
             InfoEvent(message="TEST_END").publish()
@@ -3001,6 +3004,7 @@ class ClusterTester(db_stats.TestStatsMixin, unittest.TestCase):  # pylint: disa
         self._check_alive_routines_and_report_them()
         self._check_if_db_log_time_consistency_looks_good()
         self.remove_python_exit_hooks()
+        self.log.info('HJ: TearDown2')
 
     @silence()
     def remove_python_exit_hooks(self):  # pylint: disable=no-self-use
