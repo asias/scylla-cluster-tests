@@ -6,3 +6,5 @@ export SCT_ENABLE_ARGUS=False
 proxychains4 hydra run-test performance_regression_test.PerformanceRegressionTest.test_latency_write_with_nemesis --backend docker --config test-cases/performance/perf-regression-latency-650gb-with-nemesis.yaml  --config configurations/tablets_disabled.yaml --config configurations/disable_kms.yaml
 
 # clearnup docker volume  prune
+#
+# Set SCT_NEMESIS_CLASS_NAME=NoCorruptRepairAllNodesMonkey in https://jenkins.scylladb.com/job/scylla-staging/job/Asias/job/auto-repair/6/rebuild/parameterized
