@@ -335,8 +335,8 @@ class PerformanceRegressionTest(ClusterTester):  # pylint: disable=too-many-publ
             time.sleep(interval * 60)  # Sleeping one interval (in minutes) before starting the nemesis
             self.log.info("HJ: run_workload2")
             self.db_cluster.add_nemesis(nemesis=self.get_nemesis_class(), tester_obj=self)
-            self.log.info("HJ: run_workload3")
-            self.db_cluster.start_nemesis(interval=interval, cycles_count=1)
+            self.log.info("HJ: run_workload3 {interval=}")
+            self.db_cluster.start_nemesis(interval=interval, cycles_count=-1)
             self.log.info("HJ: run_workload4")
             self._stop_load_when_nemesis_threads_end()
             self.log.info("HJ: run_workload5")
@@ -627,8 +627,9 @@ class PerformanceRegressionTest(ClusterTester):  # pylint: disable=too-many-publ
         self.log.info("HJ: test_latency_write_with_nemesis1")
         self.run_fstrim_on_all_db_nodes()
         self.log.info("HJ: test_latency_write_with_nemesis2")
-        #self.preload_data()
+        self.preload_data()
         self.log.info("HJ: test_latency_write_with_nemesis3")
+        # This casued the test to tearDown
         #self.wait_no_compactions_running(n=160)
         self.log.info("HJ: test_latency_write_with_nemesis4")
         self.run_fstrim_on_all_db_nodes()
