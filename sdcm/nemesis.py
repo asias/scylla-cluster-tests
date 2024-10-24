@@ -2129,7 +2129,7 @@ class Nemesis:  # pylint: disable=too-many-instance-attributes,too-many-public-m
                      f"-schema 'replication(strategy=NetworkTopologyStrategy," \
                      f"replication_factor={self.tester.reliable_replication_factor})' -log interval=5"
         cs_thread = self.tester.run_stress_thread(
-            stress_cmd=stress_cmd, keyspace_name=ks, stop_test_on_failure=False, round_robin=True)
+            stress_cmd=stress_cmd, keyspace_name=ks, stop_test_on_failure=False, round_robin=True, stats_aggregate_cmds=False)
         cs_thread.verify_results()
 
     @scylla_versions(("5.2.rc0", None), ("2023.1.rc0", None))
