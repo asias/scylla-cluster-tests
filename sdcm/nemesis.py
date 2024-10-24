@@ -2137,7 +2137,8 @@ class Nemesis:  # pylint: disable=too-many-instance-attributes,too-many-public-m
 
     def _prepare_test_table2(self, ks='keyspace1', table=None):
         #stress_cmd = "cassandra-stress write n=1000 cl=QUORUM -mode native cql3 " \
-        stress_cmd = "cassandra-stress write n=1000000 cl=QUORUM -mode native cql3 " \
+        # 10M
+        stress_cmd = "cassandra-stress write n=10000000 cl=QUORUM -mode native cql3 " \
                      f"-schema 'replication(strategy=NetworkTopologyStrategy," \
                      f"replication_factor={self.tester.reliable_replication_factor})' -log interval=5"
         cs_thread = self.tester.run_stress_thread(
