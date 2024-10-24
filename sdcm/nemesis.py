@@ -1718,10 +1718,10 @@ class Nemesis:  # pylint: disable=too-many-instance-attributes,too-many-public-m
     def disrupt_no_corrupt_repair_all_nodes_in_parallel(self, use_mgmt = False):
         repair_ratio = 3
         repair_ratio = 10
-        # 20 ks
-        keyspaces = [f"ks{i}" for i in range(10, 20)]
         # 50 ks
         keyspaces = [f"ks{i}" for i in range(10, 60)]
+        # 20 ks
+        keyspaces = [f"ks{i}" for i in range(10, 20)]
         # for ks in keyspaces:
         #     self._prepare_test_table(ks=ks, table='standard1')
         #     cmd = f"ALTER TABLE {ks}.standard1 WITH tombstone_gc = {{'mode': 'repair'}};"
