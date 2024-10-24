@@ -1706,6 +1706,14 @@ class Nemesis:  # pylint: disable=too-many-instance-attributes,too-many-public-m
     #    time_elapsed = int(end_time - start_time)
     #    LOGGER.info(f"HJ: Finished repair on db nodes in parallel time_elapsed={time_elapsed}s {use_mgmt=}")
 
+
+    # def set_hint_batchlog_cache(self, time):
+    #     for node in self.cluster.nodes:
+    #         with self.node.remote_scylla_yaml() as scylla_yaml:
+    #             old = scylla_yaml.repair_hints_batchlog_flush_cache_time_in_ms
+    #             scylla_yaml.repair_hints_batchlog_flush_cache_time_in_ms = time
+    #             LOGGER.info(f"HJ: Set repair_hints_batchlog_flush_cache_time_in_ms {old=} new={time} {node=}")
+
     @latency_calculator_decorator(legend="Run repair on all nodes")
     def disrupt_no_corrupt_repair_all_nodes_in_parallel(self, use_mgmt = False):
         repair_ratio = 3
