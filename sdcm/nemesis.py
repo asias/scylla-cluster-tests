@@ -1707,13 +1707,24 @@ class Nemesis:  # pylint: disable=too-many-instance-attributes,too-many-public-m
     #    LOGGER.info(f"HJ: Finished repair on db nodes in parallel time_elapsed={time_elapsed}s {use_mgmt=}")
 
     @latency_calculator_decorator(legend="Run repair on all nodes")
-    def disrupt_no_corrupt_repair_all_nodes_in_parallel(self, use_mgmt = True):
+    def disrupt_no_corrupt_repair_all_nodes_in_parallel(self, use_mgmt = False):
+        repair_ratio = 3
+        repair_ratio = 10
         keyspaces = [f"ks{i}" for i in range(10, 20)]
-        for ks in keyspaces:
-            self._prepare_test_table(ks=ks, table='standard1')
+        # for ks in keyspaces:
+        #     self._prepare_test_table(ks=ks, table='standard1')
+        #     cmd = f"ALTER TABLE {ks}.standard1 WITH tombstone_gc = {{'mode': 'repair'}};"
+        #     LOGGER.info(f"HJ: Set gc mode to repair: {cmd}")
+        #     self.target_node.run_cqlsh(cmd)
+        def create_ks(ks):
+            LOGGER.info(f"HJ: Create keyspace={ks}")
+            self._prepare_test_table2(ks=ks, table='standard1')
             cmd = f"ALTER TABLE {ks}.standard1 WITH tombstone_gc = {{'mode': 'repair'}};"
             LOGGER.info(f"HJ: Set gc mode to repair: {cmd}")
             self.target_node.run_cqlsh(cmd)
+        parallel_objects = ParallelObject(keyspaces, num_workers=min(
+            32, len(keyspaces)), timeout=HOUR_IN_SEC * 48)
+        parallel_objects.run(create_ks)
 
         self.cluster.wait_for_schema_agreement()
 
@@ -1723,18 +1734,18 @@ class Nemesis:  # pylint: disable=too-many-instance-attributes,too-many-public-m
         if use_mgmt:
             self._mgmt_repair_cli(keyspace="keyspace1")
         else:
-            nodes = 2 * self.cluster.nodes
-            def _nodetool_repair(node):
+            nodes = repair_ratio * self.cluster.nodes
+            def run_repair(node):
                 for ks in keyspaces:
                     LOGGER.info(f"HJ: Run nodetool repair on {node} for {ks}")
                     node.run_nodetool(sub_cmd=f"repair -pr {ks}", long_running=False, retry=0)
             parallel_objects = ParallelObject(nodes, num_workers=min(
                 32, len(nodes)), timeout=HOUR_IN_SEC * 48)
-            parallel_objects.run(_nodetool_repair)
+            parallel_objects.run(run_repair)
 
         end_time = time.time()
         time_elapsed = int(end_time - start_time)
-        LOGGER.info(f"HJ: Finished repair on db nodes in parallel time_elapsed={time_elapsed}s {use_mgmt=}")
+        LOGGER.info(f"HJ: Finished repair on db nodes in parallel time_elapsed={time_elapsed}s {use_mgmt=} {repair_ratio=} {keyspaces=}")
 
     def _major_compaction(self):
         with adaptive_timeout(Operations.MAJOR_COMPACT, self.target_node, timeout=8000):
@@ -2112,6 +2123,14 @@ class Nemesis:  # pylint: disable=too-many-instance-attributes,too-many-public-m
             cs_thread = self.tester.run_stress_thread(
                 stress_cmd=stress_cmd, keyspace_name=ks, stop_test_on_failure=False, round_robin=True)
             cs_thread.verify_results()
+
+    def _prepare_test_table2(self, ks='keyspace1', table=None):
+        stress_cmd = "cassandra-stress write n=1000 cl=QUORUM -mode native cql3 " \
+                     f"-schema 'replication(strategy=NetworkTopologyStrategy," \
+                     f"replication_factor={self.tester.reliable_replication_factor})' -log interval=5"
+        cs_thread = self.tester.run_stress_thread(
+            stress_cmd=stress_cmd, keyspace_name=ks, stop_test_on_failure=False, round_robin=True)
+        cs_thread.verify_results()
 
     @scylla_versions(("5.2.rc0", None), ("2023.1.rc0", None))
     def _truncate_cmd_timeout_suffix(self, truncate_timeout):  # pylint: disable=no-self-use
