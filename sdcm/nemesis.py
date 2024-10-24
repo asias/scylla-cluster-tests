@@ -1678,7 +1678,7 @@ class Nemesis:  # pylint: disable=too-many-instance-attributes,too-many-public-m
         LOGGER.info(f"HJ: Finished repair on db nodes={self.cluster.nodes} time_elapsed={time_elapsed}s")
 
     @latency_calculator_decorator(legend="Run repair on all nodes")
-    def disrupt_no_corrupt_repair_all_nodes_in_parallel(self):
+    def disrupt_no_corrupt_repair_all_nodes_in_parallel(self, use_mgmt = True):
         #self._prepare_test_table(ks=f'keyspace1', table='standard1')
         #self.cluster.wait_for_schema_agreement()
 
@@ -1688,23 +1688,23 @@ class Nemesis:  # pylint: disable=too-many-instance-attributes,too-many-public-m
 
         self.cluster.wait_for_schema_agreement()
 
-        def _nodetool_repair(node):
-            LOGGER.info(f"HJ: Run nodetool repair on {node}")
-            node.run_nodetool(sub_cmd="repair -pr keyspace1", long_running=False, retry=0)
-
         start_time = time.time()
 
-        nodes = 10 * self.cluster.nodes
-
-        LOGGER.info(f"HJ: Started repair on db {nodes=} in parallel")
-
-        parallel_objects = ParallelObject(nodes, num_workers=min(
-            32, len(nodes)), timeout=HOUR_IN_SEC * 48)
-        parallel_objects.run(_nodetool_repair)
+        LOGGER.info(f"HJ: Started repair on db nodes in parallel")
+        if use_mgmt:
+            self._mgmt_repair_cli(keyspace="keyspace1")
+        else:
+            nodes = 10 * self.cluster.nodes
+            def _nodetool_repair(node):
+                LOGGER.info(f"HJ: Run nodetool repair on {node}")
+                node.run_nodetool(sub_cmd="repair -pr keyspace1", long_running=False, retry=0)
+            parallel_objects = ParallelObject(nodes, num_workers=min(
+                32, len(nodes)), timeout=HOUR_IN_SEC * 48)
+            parallel_objects.run(_nodetool_repair)
 
         end_time = time.time()
         time_elapsed = int(end_time - start_time)
-        LOGGER.info(f"HJ: Finished repair on db {nodes=} in parallel time_elapsed={time_elapsed}s")
+        LOGGER.info(f"HJ: Finished repair on db nodes in parallel time_elapsed={time_elapsed}s {use_mgmt=}")
 
     def _major_compaction(self):
         with adaptive_timeout(Operations.MAJOR_COMPACT, self.target_node, timeout=8000):
@@ -3134,9 +3134,9 @@ class Nemesis:  # pylint: disable=too-many-instance-attributes,too-many-public-m
         self._mgmt_repair_cli()
 
     @latency_calculator_decorator(legend="Scylla-Manger repair")
-    def _mgmt_repair_cli(self):
+    def _mgmt_repair_cli(self, keyspace=None):
         mgr_cluster = self.cluster.get_cluster_manager()
-        mgr_task = mgr_cluster.create_repair_task()
+        mgr_task = mgr_cluster.create_repair_task(keyspace=keyspace)
         task_final_status = mgr_task.wait_and_get_final_status(timeout=86400)  # timeout is 24 hours
         if task_final_status != TaskStatus.DONE:
             progress_full_string = mgr_task.progress_string(
