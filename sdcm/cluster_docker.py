@@ -122,7 +122,7 @@ class DockerNode(cluster.BaseNode, NodeContainerMixin):  # pylint: disable=abstr
         return public_ipv4_addresses, private_ipv4_addresses
 
     def _get_ipv6_ip_address(self):
-        self.log.warning("We don't support IPv6 for Docker backend")
+        #self.log.warning("We don't support IPv6 for Docker backend")
         return ""
 
     @cached_property

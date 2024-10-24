@@ -1677,14 +1677,43 @@ class Nemesis:  # pylint: disable=too-many-instance-attributes,too-many-public-m
         time_elapsed = int(end_time - start_time)
         LOGGER.info(f"HJ: Finished repair on db nodes={self.cluster.nodes} time_elapsed={time_elapsed}s")
 
+    #@latency_calculator_decorator(legend="Run repair on all nodes")
+    #def disrupt_no_corrupt_repair_all_nodes_in_parallel(self, use_mgmt = True):
+    #    #self._prepare_test_table(ks=f'keyspace1', table='standard1')
+    #    #self.cluster.wait_for_schema_agreement()
+
+    #    cmd = "ALTER TABLE keyspace1.standard1 WITH tombstone_gc = {'mode': 'repair'};"
+    #    LOGGER.info(f"HJ: Set gc mode to repair: {cmd}")
+    #    self.target_node.run_cqlsh(cmd)
+
+    #    self.cluster.wait_for_schema_agreement()
+
+    #    start_time = time.time()
+
+    #    LOGGER.info(f"HJ: Started repair on db nodes in parallel")
+    #    if use_mgmt:
+    #        self._mgmt_repair_cli(keyspace="keyspace1")
+    #    else:
+    #        nodes = 10 * self.cluster.nodes
+    #        def _nodetool_repair(node):
+    #            LOGGER.info(f"HJ: Run nodetool repair on {node}")
+    #            node.run_nodetool(sub_cmd="repair -pr keyspace1", long_running=False, retry=0)
+    #        parallel_objects = ParallelObject(nodes, num_workers=min(
+    #            32, len(nodes)), timeout=HOUR_IN_SEC * 48)
+    #        parallel_objects.run(_nodetool_repair)
+
+    #    end_time = time.time()
+    #    time_elapsed = int(end_time - start_time)
+    #    LOGGER.info(f"HJ: Finished repair on db nodes in parallel time_elapsed={time_elapsed}s {use_mgmt=}")
+
     @latency_calculator_decorator(legend="Run repair on all nodes")
     def disrupt_no_corrupt_repair_all_nodes_in_parallel(self, use_mgmt = True):
-        #self._prepare_test_table(ks=f'keyspace1', table='standard1')
-        #self.cluster.wait_for_schema_agreement()
-
-        cmd = "ALTER TABLE keyspace1.standard1 WITH tombstone_gc = {'mode': 'repair'};"
-        LOGGER.info(f"HJ: Set gc mode to repair: {cmd}")
-        self.target_node.run_cqlsh(cmd)
+        keyspaces = [f"ks{i}" for i in range(10, 20)]
+        for ks in keyspaces:
+            self._prepare_test_table(ks=ks, table='standard1')
+            cmd = f"ALTER TABLE {ks}.standard1 WITH tombstone_gc = {{'mode': 'repair'}};"
+            LOGGER.info(f"HJ: Set gc mode to repair: {cmd}")
+            self.target_node.run_cqlsh(cmd)
 
         self.cluster.wait_for_schema_agreement()
 
@@ -1694,10 +1723,11 @@ class Nemesis:  # pylint: disable=too-many-instance-attributes,too-many-public-m
         if use_mgmt:
             self._mgmt_repair_cli(keyspace="keyspace1")
         else:
-            nodes = 10 * self.cluster.nodes
+            nodes = 2 * self.cluster.nodes
             def _nodetool_repair(node):
-                LOGGER.info(f"HJ: Run nodetool repair on {node}")
-                node.run_nodetool(sub_cmd="repair -pr keyspace1", long_running=False, retry=0)
+                for ks in keyspaces:
+                    LOGGER.info(f"HJ: Run nodetool repair on {node} for {ks}")
+                    node.run_nodetool(sub_cmd=f"repair -pr {ks}", long_running=False, retry=0)
             parallel_objects = ParallelObject(nodes, num_workers=min(
                 32, len(nodes)), timeout=HOUR_IN_SEC * 48)
             parallel_objects.run(_nodetool_repair)
@@ -2075,7 +2105,8 @@ class Nemesis:  # pylint: disable=too-many-instance-attributes,too-many-public-m
         test_keyspaces = self.cluster.get_test_keyspaces()
         # if keyspace or table doesn't exist, create it by cassandra-stress
         if ks not in test_keyspaces or not table_exist:
-            stress_cmd = "cassandra-stress write n=400000 cl=QUORUM -mode native cql3 " \
+            #stress_cmd = "cassandra-stress write n=400000 cl=QUORUM -mode native cql3 " \
+            stress_cmd = "cassandra-stress write n=1000 cl=QUORUM -mode native cql3 " \
                          f"-schema 'replication(strategy=NetworkTopologyStrategy," \
                          f"replication_factor={self.tester.reliable_replication_factor})' -log interval=5"
             cs_thread = self.tester.run_stress_thread(
