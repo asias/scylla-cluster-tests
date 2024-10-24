@@ -1560,6 +1560,7 @@ class ClusterTester(db_stats.TestStatsMixin, unittest.TestCase):  # pylint: disa
                                                              **container_node_params, **common_params)
         self.loaders = cluster_docker.LoaderSetDocker(n_nodes=self.params.get("n_loaders"),
                                                       **container_node_params, **common_params)
+        # FIXME
         self.monitors = cluster_docker.MonitorSetDocker(n_nodes=self.params.get("n_monitor_nodes"),
                                                         targets=dict(db_cluster=self.db_cluster,
                                                                      loaders=self.loaders),

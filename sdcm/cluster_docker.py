@@ -417,6 +417,7 @@ class DockerMonitoringNode(cluster.BaseNode):  # pylint: disable=abstract-method
     def tags(self) -> dict[str, str]:
         return {**super().tags, "NodeIndex": str(self.node_index), }
 
+    # FIXME: monitor is local
     def _init_remoter(self, ssh_login_info):  # pylint: disable=no-self-use
         self.remoter = LOCALRUNNER
 

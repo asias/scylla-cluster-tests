@@ -5481,6 +5481,7 @@ class BaseMonitorSet:  # pylint: disable=too-many-public-methods,too-many-instan
         # since monitoring node is started last (after db nodes and loader) we can't actually set the timeout
         # for starting the alert manager thread (since it depends on DB cluster size and num of loaders)
         node.start_alert_manager_thread()  # remove when start task threads will be started after node setup
+        # FIXME
         if self.params.get("use_mgmt"):
             self.install_scylla_manager(node)
 
