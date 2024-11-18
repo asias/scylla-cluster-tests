@@ -1740,43 +1740,6 @@ class Nemesis:  # pylint: disable=too-many-instance-attributes,too-many-public-m
         time_elapsed = int(end_time - start_time)
         LOGGER.info(f"HJ: Finished repair on db nodes={self.cluster.nodes} time_elapsed={time_elapsed}s")
 
-    #@latency_calculator_decorator(legend="Run repair on all nodes")
-    #def disrupt_no_corrupt_repair_all_nodes_in_parallel(self, use_mgmt = True):
-    #    #self._prepare_test_table(ks=f'keyspace1', table='standard1')
-    #    #self.cluster.wait_for_schema_agreement()
-
-    #    cmd = "ALTER TABLE keyspace1.standard1 WITH tombstone_gc = {'mode': 'repair'};"
-    #    LOGGER.info(f"HJ: Set gc mode to repair: {cmd}")
-    #    self.target_node.run_cqlsh(cmd)
-
-    #    self.cluster.wait_for_schema_agreement()
-
-    #    start_time = time.time()
-
-    #    LOGGER.info(f"HJ: Started repair on db nodes in parallel")
-    #    if use_mgmt:
-    #        self._mgmt_repair_cli(keyspace="keyspace1")
-    #    else:
-    #        nodes = 10 * self.cluster.nodes
-    #        def _nodetool_repair(node):
-    #            LOGGER.info(f"HJ: Run nodetool repair on {node}")
-    #            node.run_nodetool(sub_cmd="repair -pr keyspace1", long_running=False, retry=0)
-    #        parallel_objects = ParallelObject(nodes, num_workers=min(
-    #            32, len(nodes)), timeout=HOUR_IN_SEC * 48)
-    #        parallel_objects.run(_nodetool_repair)
-
-    #    end_time = time.time()
-    #    time_elapsed = int(end_time - start_time)
-    #    LOGGER.info(f"HJ: Finished repair on db nodes in parallel time_elapsed={time_elapsed}s {use_mgmt=}")
-
-
-    # def set_hint_batchlog_cache(self, time):
-    #     for node in self.cluster.nodes:
-    #         with self.node.remote_scylla_yaml() as scylla_yaml:
-    #             old = scylla_yaml.repair_hints_batchlog_flush_cache_time_in_ms
-    #             scylla_yaml.repair_hints_batchlog_flush_cache_time_in_ms = time
-    #             LOGGER.info(f"HJ: Set repair_hints_batchlog_flush_cache_time_in_ms {old=} new={time} {node=}")
-
     @latency_calculator_decorator(legend="Run repair on all nodes")
     def disrupt_no_corrupt_repair_all_nodes_in_parallel(self, use_mgmt = False):
         repair_ratio = 2
