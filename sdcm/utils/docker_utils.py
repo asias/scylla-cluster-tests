@@ -147,6 +147,7 @@ class ContainerManager:  # pylint: disable=too-many-public-methods)
     # pylint: disable=protected-access
 
     keep_alive_suffix = "---KEEPALIVE"
+    keep_alive_suffix = ""
     default_docker_client = _docker
 
     @classmethod

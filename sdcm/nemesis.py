@@ -1783,6 +1783,91 @@ class Nemesis:  # pylint: disable=too-many-instance-attributes,too-many-public-m
         nr_repairs = len(self.cluster.nodes) * repair_ratio * len(keyspaces) * repair_run
         LOGGER.info(f"HJ: Finished repair on db nodes in parallel {time_elapsed=}s {nr_repairs=} {use_mgmt=} {repair_ratio=} {keyspaces=}")
 
+    def set_config(self, node, enable_multiple_dc_opt):
+        try:
+            if False:
+                with node.remote_scylla_yaml() as scylla_yaml:
+                    current_value = scylla_yaml.fd_initial_value_ms
+                    if current_value:
+                        new_value = current_value + 10
+                    else:
+                        new_value = 1234
+                    scylla_yaml.fd_initial_value_ms = new_value
+                    self.log.debug(f"HJ: Changing node {node} config {current_value=} {new_value=}")
+                    self.log.info(f"HJ: Restarting node {node}")
+                    node.restart_scylla_server()
+                    self.log.info(f"HJ: Restarting node {node} done")
+            if True:
+                with node.remote_scylla_yaml() as scylla_yaml:
+                    current_value = scylla_yaml.enable_multiple_dc_opt
+                    scylla_yaml.enable_multiple_dc_opt = enable_multiple_dc_opt
+                    self.log.info(f"HJ: Changing node {node} config {current_value=} {enable_multiple_dc_opt=}")
+                    self.log.info(f"HJ: Restarting node {node}")
+                    node.restart_scylla_server()
+                    self.log.info(f"HJ: Restarting node {node} done")
+        except:
+            LOGGER.info(f"HJ: failed to update config")
+            pass
+
+    @latency_calculator_decorator(legend="Run insert while node down and repair")
+    def disrupt_insert_with_node_down_repair(self, keyspaces=["ks1", "ks2"]):
+        #keyspaces = ['ks1']
+        nr_dc = 3
+        try:
+            nr_dc = int(self.tester.params.get('nr_dc'))
+            LOGGER.info(f"HJ: got {nr_dc=}")
+        except:
+            pass
+        nr_loaders = 1
+        try:
+            nr_loaders = int(self.tester.params.get('n_loaders'))
+            LOGGER.info(f"HJ: got {nr_loaders=}")
+        except:
+            pass
+
+        key_current = 1
+        key_nr = 1000
+        key_nr = 1000000
+        key_nr = 8000000
+        nodes = self.tester.db_cluster.nodes
+        nr_nodes = len(nodes)
+        rf_per_dc = int(nr_nodes / nr_dc)
+
+        # Insert Data
+        LOGGER.info(f"HJ: Started insert {keyspaces=} nodes={nr_nodes} {key_nr=} {nr_dc=}")
+        start_time = time.time()
+        for node in nodes:
+            key_start = key_current
+            key_end = key_start + key_nr - 1
+            key_current += key_nr
+            LOGGER.info(f"HJ: Started insert {key_nr} keys to {keyspaces=} while {node.instance_name} is down {key_start=} {key_end=}")
+            node.stop_scylla()
+            for ks in keyspaces:
+                self.insert_data_with_cs(ks, key_start, key_end, rf_per_dc, nr_loaders)
+            node.start_scylla()
+            LOGGER.info(f"HJ: Finished insert {key_nr} keys to {keyspaces=} while {node.instance_name} is down {key_start=} {key_end=}")
+        insert_time = int(time.time() - start_time)
+        LOGGER.info(f"HJ: Finished insert {keyspaces=} nodes={nr_nodes} {key_nr=} {insert_time=}s")
+
+
+        for ks in keyspaces:
+            # Modify config
+            node = nodes[0]
+            enable_multiple_dc_opt = False
+            if (ks == 'ks1'):
+                enable_multiple_dc_opt = True
+            if (ks == 'ks2'):
+                enable_multiple_dc_opt = False
+            self.set_config(node, enable_multiple_dc_opt=enable_multiple_dc_opt)
+
+            # Run repair
+            start_time = time.time()
+            node = nodes[0]
+            LOGGER.info(f"HJ: Started repair {ks=} {nr_nodes=} {key_nr=} {nr_dc=} {rf_per_dc=}")
+            node.run_nodetool(sub_cmd=f"repair {ks}", long_running=False, retry=0)
+            repair_time = int(time.time() - start_time)
+            LOGGER.info(f"HJ: Finished repair {ks=} {nr_nodes=} {key_nr=} {nr_dc=} {rf_per_dc=} {repair_time=}s {enable_multiple_dc_opt=}")
+     
     def _major_compaction(self):
         with adaptive_timeout(Operations.MAJOR_COMPACT, self.target_node, timeout=8000):
             self.target_node.run_nodetool("compact")
@@ -2173,6 +2258,31 @@ class Nemesis:  # pylint: disable=too-many-instance-attributes,too-many-public-m
         cs_thread = self.tester.run_stress_thread(
             stress_cmd=stress_cmd, keyspace_name=ks, stop_test_on_failure=False, round_robin=True, stats_aggregate_cmds=False)
         cs_thread.verify_results()
+
+    def insert_data_with_cs(self, ks='keyspace1', key_start=1, key_end=100, rf=3, nr_loaders=1):
+        # Insert data [key_start,key_end]
+        s = key_start
+        e = key_end
+        stress_queue = []
+        keys_per_loader = int((key_end - key_start + 1) / nr_loaders)
+        current = key_start
+        for x in range(nr_loaders):
+            key_start = current
+            key_end = current + keys_per_loader - 1
+            current += keys_per_loader
+            num = keys_per_loader
+            stress_cmd = ''
+            if True:
+                stress_cmd = f"cassandra-stress write no-warmup cl=LOCAL_QUORUM n={num} -schema 'replication(strategy=NetworkTopologyStrategy,replication_factor={rf})' -mode cql3 native -rate 'threads=20' -col 'size=FIXED(128) n=FIXED(8)' -pop seq={key_start}..{key_end} -log interval=5 -errors ignore"
+            else:
+                stress_cmd = f"scylla-bench -workload=sequential -mode=write -partition-count={num} -partition-offset={key_start} -clustering-row-count=10 -replication-factor={rf} -consistency-level=quorum -keyspace={ks}"
+
+            LOGGER.info(f"HJ: Execute start={s} end={e} {ks=} {key_start=} {key_end=} {keys_per_loader=} {nr_loaders=} {rf=} {stress_cmd=}")
+            cs_thread = self.tester.run_stress_thread(
+                stress_cmd=stress_cmd, keyspace_name=ks, stop_test_on_failure=False, round_robin=True, stats_aggregate_cmds=False)
+            stress_queue.append(cs_thread)
+        for stress in stress_queue:
+            self.tester.get_stress_results(queue=stress, store_results=False)
 
     @scylla_versions(("5.2.rc0", None), ("2023.1.rc0", None))
     def _truncate_cmd_timeout_suffix(self, truncate_timeout):  # pylint: disable=no-self-use
@@ -5747,6 +5857,14 @@ class NoCorruptRepairAllNodesMonkey(Nemesis):
     def disrupt(self):
         #self.disrupt_no_corrupt_repair_all_nodes()
         self.disrupt_no_corrupt_repair_all_nodes_in_parallel()
+
+class InsertWithNodeDownRepairMonkey(Nemesis):
+    disruptive = False
+    kubernetes = True
+    limited = True
+
+    def disrupt(self):
+        self.disrupt_insert_with_node_down_repair()
 
 
 class MajorCompactionMonkey(Nemesis):

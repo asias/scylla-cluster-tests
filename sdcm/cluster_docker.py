@@ -225,7 +225,9 @@ class DockerCluster(cluster.BaseCluster):  # pylint: disable=abstract-method
                  params: dict = None) -> None:
         self.source_image = f"{docker_image}:{docker_image_tag}"
         # FIXME
-        self.node_container_image_tag = f"scylla-sct:{node_type}-{str(self.test_config.test_id())[:8]}"
+        #self.node_container_image_tag = f"scylla-sct:{node_type}-{str(self.test_config.test_id())[:8]}"
+        docker_id='e0e28179'
+        self.node_container_image_tag = f"scylla-sct:{node_type}-{docker_id}"
         self.node_container_key_file = node_key_file
 
         super().__init__(cluster_prefix=cluster_prefix,
