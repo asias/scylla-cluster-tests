@@ -1809,6 +1809,73 @@ class Nemesis:  # pylint: disable=too-many-instance-attributes,too-many-public-m
             LOGGER.info(f"HJ: failed to update config")
             pass
 
+    def generate_data(self, node, keyspace, table, start_key, end_key, column_size, drop_ratio)
+        """
+        Generate data on the node.
+        """
+        #http://127.0.0.1:10000/storage_service/generate_data?keyspace=keyspace1&table=standard1&start_key=0&end_key=10000000&column_size=34&drop_ratio=0.05
+        LOGGER.info(f'HJ: Started {cmd=}')
+        cmd = f"curl -X POST 'http://127.0.0.1:10000/storage_service/generate_data?{keyspace=}"
+              f"&{table=}&{start_key=}&{end_key=}&{column_size=}&{drop_ratio=}"
+        try:
+            node.remoter.run(cmd)
+        except:
+            LOGGER.info(f'HJ: Failed {cmd=}')
+        LOGGER.info(f'HJ: Finished {cmd=}')
+
+    @latency_calculator_decorator(legend="Generate data and repair")
+    def disrupt_generate_data_repair(self, keyspaces=["ks1", "ks2"]):
+        nr_dc = 3
+        try:
+            nr_dc = int(self.tester.params.get('nr_dc'))
+            LOGGER.info(f"HJ: got {nr_dc=}")
+        except:
+            pass
+
+        nodes = self.tester.db_cluster.nodes
+        nr_nodes = len(nodes)
+        rf_per_dc = int(nr_nodes / nr_dc)
+
+        table = 'standard1'
+        # 100M
+        key_nr = 100000000
+        start_key = 1
+        end_key = key_nr
+        column_size = 34
+        drop_ratio = 0.05
+
+        # Create ks
+        LOGGER.info(f"HJ: Create {keyspaces=}")
+        for ks in keyspaces:
+            self.insert_data_with_cs(ks, 1, 10, rf_per_dc, 1)
+
+        # Insert Data
+        LOGGER.info(f"HJ: Started insert {keyspaces=} nodes={nr_nodes} {key_nr=} {nr_dc=}")
+        start_time = time.time()
+        for node in nodes:
+            for keyspace in keyspaces:
+                self.generate_data(node, keyspace, table, start_key, end_key, column_size, drop_ratio)
+        insert_time = int(time.time() - start_time)
+        LOGGER.info(f"HJ: Finished insert {keyspaces=} nodes={nr_nodes} {key_nr=} {insert_time=}s")
+
+        for ks in keyspaces:
+            # Modify config
+            node = nodes[0]
+            enable_multiple_dc_opt = False
+            if (ks == 'ks1'):
+                enable_multiple_dc_opt = True
+            if (ks == 'ks2'):
+                enable_multiple_dc_opt = False
+            self.set_config(node, enable_multiple_dc_opt=enable_multiple_dc_opt)
+
+            # Run repair
+            start_time = time.time()
+            node = nodes[0]
+            LOGGER.info(f"HJ: Started repair {ks=} {nr_nodes=} {key_nr=} {nr_dc=} {rf_per_dc=}")
+            node.run_nodetool(sub_cmd=f"repair {ks}", long_running=False, retry=0)
+            repair_time = int(time.time() - start_time)
+            LOGGER.info(f"HJ: Finished repair {ks=} {nr_nodes=} {key_nr=} {nr_dc=} {rf_per_dc=} {repair_time=}s {enable_multiple_dc_opt=}")
+
     @latency_calculator_decorator(legend="Run insert while node down and repair")
     def disrupt_insert_with_node_down_repair(self, keyspaces=["ks1", "ks2"]):
         #keyspaces = ['ks1']
@@ -1848,7 +1915,6 @@ class Nemesis:  # pylint: disable=too-many-instance-attributes,too-many-public-m
             LOGGER.info(f"HJ: Finished insert {key_nr} keys to {keyspaces=} while {node.instance_name} is down {key_start=} {key_end=}")
         insert_time = int(time.time() - start_time)
         LOGGER.info(f"HJ: Finished insert {keyspaces=} nodes={nr_nodes} {key_nr=} {insert_time=}s")
-
 
         for ks in keyspaces:
             # Modify config
@@ -5865,6 +5931,14 @@ class InsertWithNodeDownRepairMonkey(Nemesis):
 
     def disrupt(self):
         self.disrupt_insert_with_node_down_repair()
+
+class GenerateDataRepairMonkey(Nemesis):
+    disruptive = False
+    kubernetes = True
+    limited = True
+
+    def disrupt(self):
+        self.disrupt_generate_data_repair()
 
 
 class MajorCompactionMonkey(Nemesis):
