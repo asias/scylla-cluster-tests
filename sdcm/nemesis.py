@@ -1817,7 +1817,7 @@ class Nemesis:  # pylint: disable=too-many-instance-attributes,too-many-public-m
         cmd = f"curl -X POST 'http://127.0.0.1:10000/storage_service/generate_data?keyspace={keyspace}&table={table}&{start_key=}&{end_key=}&{column_size=}&{drop_ratio=}'"
         LOGGER.info(f'HJ: Started {cmd=}')
         try:
-            node.remoter.run(cmd)
+            node.remoter.run(cmd, timeout=3600 * 2)
         except:
             LOGGER.info(f'HJ: Failed {cmd=}')
         LOGGER.info(f'HJ: Finished {cmd=}')
