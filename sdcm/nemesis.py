@@ -1809,7 +1809,7 @@ class Nemesis:  # pylint: disable=too-many-instance-attributes,too-many-public-m
             LOGGER.info(f"HJ: failed to update config")
             pass
 
-    def generate_data(self, node, keyspace, table, start_key, end_key, column_size, drop_ratio)
+    def generate_data(self, node, keyspace, table, start_key, end_key, column_size, drop_ratio):
         """
         Generate data on the node.
         """
