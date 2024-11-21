@@ -1851,9 +1851,11 @@ class Nemesis:  # pylint: disable=too-many-instance-attributes,too-many-public-m
         # Insert Data
         LOGGER.info(f"HJ: Started insert {keyspaces=} nodes={nr_nodes} {key_nr=} {nr_dc=}")
         start_time = time.time()
-        for node in nodes:
+        def run_insert(node):
             for keyspace in keyspaces:
                 self.generate_data(node, keyspace, table, start_key, end_key, column_size, drop_ratio)
+        parallel_objects = ParallelObject(nodes, num_workers=min(32, len(nodes)), timeout=HOUR_IN_SEC * 10)
+        parallel_objects.run(run_insert)
         insert_time = int(time.time() - start_time)
         LOGGER.info(f"HJ: Finished insert {keyspaces=} nodes={nr_nodes} {key_nr=} {insert_time=}s")
 
@@ -1874,6 +1876,10 @@ class Nemesis:  # pylint: disable=too-many-instance-attributes,too-many-public-m
             node.run_nodetool(sub_cmd=f"repair {ks}", long_running=False, retry=0)
             repair_time = int(time.time() - start_time)
             LOGGER.info(f"HJ: Finished repair {ks=} {nr_nodes=} {key_nr=} {nr_dc=} {rf_per_dc=} {repair_time=}s {enable_multiple_dc_opt=}")
+
+        LOGGER.info(f"HJ: Started to sleep")
+        time.sleep(600)
+        LOGGER.info(f"HJ: Finished to sleep")
 
     @latency_calculator_decorator(legend="Run insert while node down and repair")
     def disrupt_insert_with_node_down_repair(self, keyspaces=["ks1", "ks2"]):
