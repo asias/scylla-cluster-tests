@@ -1813,10 +1813,9 @@ class Nemesis:  # pylint: disable=too-many-instance-attributes,too-many-public-m
         """
         Generate data on the node.
         """
-        #http://127.0.0.1:10000/storage_service/generate_data?keyspace=keyspace1&table=standard1&start_key=0&end_key=10000000&column_size=34&drop_ratio=0.05
+        # E.g., http://127.0.0.1:10000/storage_service/generate_data?keyspace=keyspace1&table=standard1&start_key=0&end_key=10000000&column_size=34&drop_ratio=0.05
+        cmd = f"curl -X POST 'http://127.0.0.1:10000/storage_service/generate_data?keyspace={keyspace}&table={table}&{start_key=}&{end_key=}&{column_size=}&{drop_ratio=}'"
         LOGGER.info(f'HJ: Started {cmd=}')
-        cmd = f"curl -X POST 'http://127.0.0.1:10000/storage_service/generate_data?{keyspace=}"
-              f"&{table=}&{start_key=}&{end_key=}&{column_size=}&{drop_ratio=}"
         try:
             node.remoter.run(cmd)
         except:
@@ -1847,7 +1846,7 @@ class Nemesis:  # pylint: disable=too-many-instance-attributes,too-many-public-m
         # Create ks
         LOGGER.info(f"HJ: Create {keyspaces=}")
         for ks in keyspaces:
-            self.insert_data_with_cs(ks, 1, 10, rf_per_dc, 1)
+            self.insert_data_with_cs(ks, 1, 100, rf_per_dc, 1)
 
         # Insert Data
         LOGGER.info(f"HJ: Started insert {keyspaces=} nodes={nr_nodes} {key_nr=} {nr_dc=}")
