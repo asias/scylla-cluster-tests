@@ -14,7 +14,7 @@
 
 ### WORK AWS MULTIPLE DC
 # CONFIG STARTS
-n_db_nodes: '2 2 2'
+n_db_nodes: '3 3 3'
 nr_dc: 3
 n_loaders: 1
 nemesis_add_node_cnt: 3
