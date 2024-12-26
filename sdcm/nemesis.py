@@ -1861,7 +1861,11 @@ class Nemesis:  # pylint: disable=too-many-instance-attributes,too-many-public-m
         insert_time = int(time.time() - start_time)
         LOGGER.info(f"HJ: Finished insert {keyspaces=} nodes={nr_nodes} {key_nr=} {insert_time=}s")
 
-        sleep_before_repair = 900
+        LOGGER.info(f"HJ: Sleep after insert data")
+        time.sleep(1800)
+        LOGGER.info(f"HJ: Sleep after insert data done")
+
+        sleep_before_repair = 1800
         for ks in keyspaces:
             LOGGER.info(f"HJ: Started to sleep before repair {ks=}")
             time.sleep(sleep_before_repair)
