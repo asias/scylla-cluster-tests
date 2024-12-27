@@ -2355,7 +2355,7 @@ class Nemesis:  # pylint: disable=too-many-instance-attributes,too-many-public-m
             num = keys_per_loader
             stress_cmd = ''
             if True:
-                stress_cmd = f"cassandra-stress write no-warmup cl=LOCAL_QUORUM n={num} -schema 'replication(strategy=NetworkTopologyStrategy,replication_factor={rf})' -mode cql3 native -rate 'threads=20' -col 'size=FIXED(128) n=FIXED(8)' -pop seq={key_start}..{key_end} -log interval=5 -errors ignore"
+                stress_cmd = f"cassandra-stress write no-warmup cl=ONE n={num} -schema 'replication(strategy=NetworkTopologyStrategy,replication_factor={rf})' -mode cql3 native -rate 'threads=20' -col 'size=FIXED(128) n=FIXED(8)' -pop seq={key_start}..{key_end} -log interval=5 -errors ignore"
             else:
                 stress_cmd = f"scylla-bench -workload=sequential -mode=write -partition-count={num} -partition-offset={key_start} -clustering-row-count=10 -replication-factor={rf} -consistency-level=quorum -keyspace={ks}"
 
