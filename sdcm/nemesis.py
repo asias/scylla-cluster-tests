@@ -1836,10 +1836,10 @@ class Nemesis:  # pylint: disable=too-many-instance-attributes,too-many-public-m
         rf_per_dc = int(nr_nodes / nr_dc)
 
         table = 'standard1'
-        # 100M
-        key_nr = 100000000
         # 400M
         key_nr = 400000000
+        # 100M
+        key_nr = 100000000
         start_key = 1
         end_key = key_nr
         column_size = 34
@@ -1861,11 +1861,12 @@ class Nemesis:  # pylint: disable=too-many-instance-attributes,too-many-public-m
         insert_time = int(time.time() - start_time)
         LOGGER.info(f"HJ: Finished insert {keyspaces=} nodes={nr_nodes} {key_nr=} {insert_time=}s")
 
+        sleep_before_repair = 1800
+        sleep_before_repair = 900
         LOGGER.info(f"HJ: Sleep after insert data")
-        time.sleep(1800)
+        time.sleep(sleep_before_repair)
         LOGGER.info(f"HJ: Sleep after insert data done")
 
-        sleep_before_repair = 1800
         for ks in keyspaces:
             LOGGER.info(f"HJ: Started to sleep before repair {ks=}")
             time.sleep(sleep_before_repair)
@@ -1889,7 +1890,7 @@ class Nemesis:  # pylint: disable=too-many-instance-attributes,too-many-public-m
             LOGGER.info(f"HJ: Finished repair {ks=} {nr_nodes=} {key_nr=} {nr_dc=} {rf_per_dc=} {repair_time=}s {enable_multiple_dc_opt=}")
 
         LOGGER.info(f"HJ: Started to sleep after test")
-        time.sleep(600)
+        time.sleep(60)
         LOGGER.info(f"HJ: Finished to sleep after test")
 
     @latency_calculator_decorator(legend="Run insert while node down and repair")
