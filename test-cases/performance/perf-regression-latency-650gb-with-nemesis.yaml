@@ -31,7 +31,7 @@ use_hdr_cs_histogram: false
 use_placement_group: false
 use_capacity_reservation: false
 email_subject_postfix: 'latency during operations'
-append_scylla_args: '--hinted-handoff-enabled 0 --num-tokens 1 --blocked-reactor-notify-ms 5 --abort-on-lsa-bad-alloc 1 --abort-on-seastar-bad-alloc --abort-on-internal-error 1 --abort-on-ebadf 1'
+append_scylla_args: '--enable-multiple-dc-opt 0 --hinted-handoff-enabled 0 --num-tokens 1 --blocked-reactor-notify-ms 5 --abort-on-lsa-bad-alloc 1 --abort-on-seastar-bad-alloc --abort-on-internal-error 1 --abort-on-ebadf 1'
 # CONFIG ENDS
 ### WORK AWS MULTIPLE DC
 

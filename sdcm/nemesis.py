@@ -1824,6 +1824,7 @@ class Nemesis:  # pylint: disable=too-many-instance-attributes,too-many-public-m
 
     @latency_calculator_decorator(legend="Generate data and repair")
     def disrupt_generate_data_repair(self, keyspaces=["ks1", "ks2"]):
+        keyspaces = ['ks2']
         nr_dc = 3
         try:
             nr_dc = int(self.tester.params.get('nr_dc'))
@@ -1895,7 +1896,7 @@ class Nemesis:  # pylint: disable=too-many-instance-attributes,too-many-public-m
 
     @latency_calculator_decorator(legend="Run insert while node down and repair")
     def disrupt_insert_with_node_down_repair(self, keyspaces=["ks1", "ks2"]):
-        #keyspaces = ['ks1']
+        keyspaces = ['ks2']
         nr_dc = 3
         try:
             nr_dc = int(self.tester.params.get('nr_dc'))
